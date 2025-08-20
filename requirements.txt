@@ -1,0 +1,8 @@
+flask
+flask-socketio
+flask-sqlalchemy
+requests
+python-telegram-bot
+beautifulsoup4
+eventlet
+psycopg2-binary

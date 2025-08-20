@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Crypto Token Monitor - Dashboard{% endblock %}
+
+{% block content %}
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-search fa-2x text-info mb-2"></i>
+                <h5 class="card-title">Tokens Found</h5>
+                <h3 class="text-info" id="tokens-found">-</h3>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-paper-plane fa-2x text-success mb-2"></i>
+                <h5 class="card-title">Tokens Posted</h5>
+                <h3 class="text-success" id="tokens-posted">-</h3>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+                <h5 class="card-title">Last Check</h5>
+                <small class="text-warning" id="last-check">-</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-heartbeat fa-2x text-primary mb-2"></i>
+                <h5 class="card-title">Status</h5>
+                <span class="badge" id="monitor-status">Unknown</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Error Alert -->
+<div id="error-alert" class="alert alert-danger d-none" role="alert">
+    <i class="fas fa-exclamation-triangle me-2"></i>
+    <span id="error-message"></span>
+</div>
+
+<!-- Success Alert for New Tokens -->
+<div id="success-alert" class="alert alert-success d-none" role="alert">
+    <i class="fas fa-check-circle me-2"></i>
+    <span id="success-message"></span>
+</div>
+
+<!-- Posted Tokens -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="fas fa-list me-2"></i>
+            Posted Tokens
+        </h5>
+        <button class="btn btn-outline-secondary btn-sm" onclick="refreshTokens()">
+            <i class="fas fa-refresh"></i>
+            Refresh
+        </button>
+    </div>
+    <div class="card-body">
+        <!-- Loading State -->
+        <div id="loading-tokens" class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading posted tokens...</p>
+        </div>
+        
+        <!-- Empty State -->
+        <div id="empty-tokens" class="text-center py-5 d-none">
+            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">No tokens posted yet</h5>
+            <p class="text-muted">The monitor will automatically post new tokens when detected.</p>
+        </div>
+        
+        <!-- Tokens List -->
+        <div id="tokens-list" class="d-none">
+            <!-- Tokens will be populated here -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Initialize the dashboard when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    initializeDashboard();
+});
+</script>
+{% endblock %}
