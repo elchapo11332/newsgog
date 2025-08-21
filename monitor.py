@@ -109,7 +109,7 @@ class CryptoMonitor:
                 contract = pool.get("coinType")
                 
                 # Extract pool ID for BUY button
-                pool_id = pool.get("poolId")
+                pool_id = pool.get("coinType")
                 
                 # Extract creator Twitter handle from metadata (more reliable)
                 metadata = pool.get("metadata", {})
