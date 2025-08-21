@@ -114,7 +114,7 @@ class TelegramBot:
                 [
                     {
                         "text": "🚀 BUY TOKEN",
-                        "url": f"https://blast.fun/token/{pool_id}"
+                        "url": f"https://t.me/RaidenXTradeBot?start=Blastn_sw_{contract_address[:20]}"
                     }
                 ]
             ]
