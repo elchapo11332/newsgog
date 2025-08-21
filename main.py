@@ -1,7 +1,25 @@
 from app import app, socketio
-from monitor import start_monitoring
+from monitor import start_monitoring as original_start_monitoring
 import threading
 import logging
+
+# ruaj kontratat e postuara
+posted_contracts = set()
+
+def start_monitoring():
+    global posted_contracts
+    for token in original_start_monitoring():  # supozojmë që monitor.py gjeneron tokena
+        contract_address = token.get("contract")
+        if contract_address and contract_address not in posted_contracts:
+            # vetëm një herë dërgohet
+            message = telegram_bot.format_token_message(
+                token_name=token.get("name"),
+                contract_address=contract_address
+            )
+            buy_button = telegram_bot.create_buy_button(token.get("pool_id"))
+
+            telegram_bot.send_message(message, reply_markup=buy_button)
+            posted_contracts.add(contract_address)
 
 if __name__ == '__main__':
     # Start the monitoring service in a separate thread
