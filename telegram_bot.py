@@ -6,7 +6,6 @@ import base64
 import tempfile
 from typing import Optional
 
-
 class TelegramBot:
     def __init__(self):
         self.token = os.getenv("TELEGRAM_TOKEN", "8315223590:AAGOsygmRT9y_DjOxueYnRikPo1i9Gxxjk4")
@@ -110,23 +109,31 @@ class TelegramBot:
 📛 <b>Name:</b> {token_name}
 📜 <b>Contract:</b> <code>{contract_address}</code>"""
         
-        # Gjithmonë trego Dev Wallet nëse ekziston
-        if creatorAddress:
+        # Dev Wallet vetëm nëse duket si adresë valide (0x...)
+        if creatorAddress and creatorAddress.startswith("0x"):
             message += f"\n👤 <b>Dev Wallet:</b> <code>{creatorAddress}</code>"
             message += f"\n🔎 <b>View:</b> <a href=\"https://suiscan.xyz/mainnet/account/{creatorAddress}\">SuiScan</a>"
         
-        # Gjithmonë trego Twitter nëse ekziston
-        if twitter_handle:
+        # Twitter vetëm nëse nuk duket kontratë
+        if twitter_handle and not twitter_handle.startswith("0x") and "::" not in twitter_handle:
             message += f"\n🐦 <b>X:</b> <a href=\"https://x.com/{twitter_handle}\">@{twitter_handle}</a>"
         
         return message
 
-    def create_buttons(
-        self, 
-        coinType: str, 
-        creatorAddress: Optional[str] = None, 
-        twitter_handle: Optional[str] = None
-    ) -> dict:
+    def create_buy_button(self, coinType: str) -> dict:
+        """Create inline keyboard with only BUY button"""
+        return {
+            "inline_keyboard": [
+                [
+                    {
+                        "text": "🚀 BUY TOKEN",
+                        "url": f"https://t.me/RaidenXTradeBot?start=Blastn_sw_{coinType[:20]}"
+                    }
+                ]
+            ]
+        }
+
+    def create_buttons(self, coinType: str, creatorAddress: Optional[str] = None, twitter_handle: Optional[str] = None) -> dict:
         """Create inline keyboard with BUY + optional links"""
         buttons = [
             [
@@ -138,7 +145,7 @@ class TelegramBot:
         ]
         
         # Dev Wallet button
-        if creatorAddress:
+        if creatorAddress and creatorAddress.startswith("0x"):
             buttons.append([
                 {
                     "text": "👤 View Dev Wallet",
@@ -147,7 +154,7 @@ class TelegramBot:
             ])
         
         # Twitter button
-        if twitter_handle:
+        if twitter_handle and not twitter_handle.startswith("0x") and "::" not in twitter_handle:
             buttons.append([
                 {
                     "text": "🐦 Open X",
