@@ -236,10 +236,10 @@ class TelegramBot:
             message += f"\n👨‍💻 <b>Dev Wallet:</b> <a href=\"{sui_explorer_url}\">{creator_address[:8]}...{creator_address[-6:]}</a>"
         else:
             # If creator address fetch failed, still try to get it
-            fetched_creator = self.get_creator_address(contract_address)
-            if fetched_creator:
-                sui_explorer_url = f"https://suiscan.xyz/mainnet/account/{fetched_creator}"
-                message += f"\n👨‍💻 <b>Dev Wallet:</b> <a href=\"{sui_explorer_url}\">{fetched_creator[:8]}...{fetched_creator[-6:]}</a>"
+            creator_address = self.get_creator_address(contract_address)
+            if creator_address:
+                sui_explorer_url = f"https://suiscan.xyz/mainnet/account/{creator_address}"
+                message += f"\n👨‍💻 <b>Dev Wallet:</b> <a href=\"{sui_explorer_url}\">{creator_address[:8]}...{creator_address[-6:]}</a>"
             else:
                 message += f"\n👨‍💻 <b>Dev Wallet:</b> <i>Not available</i>"
         
