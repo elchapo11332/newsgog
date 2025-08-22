@@ -102,25 +102,25 @@ class TelegramBot:
     def get_creator_address(self, contract_address: str) -> Optional[str]:
         """Fetch creator address from dev wallet API"""
         try:
-            headers = {
-                'Authorization': f'Bearer {self.wallet_api_key}',
-                'Content-Type': 'application/json'
-            }
-            
-            # Make API call to get wallet information
-            url = f"{self.wallet_api_url}/wallet/creator/{contract_address}"
-            response = requests.get(url, headers=headers, timeout=30)
+            # Use the specific API endpoint
+            url = "https://steep-thunder-1d39.vapexmeli1.workers.dev/"
+            response = requests.get(url, timeout=30)
             response.raise_for_status()
             
             data = response.json()
-            creator_address = data.get('creatorAddress')
+            pools = data.get('pools', [])
             
-            if creator_address:
-                logging.info(f"Retrieved creator address: {creator_address}")
-                return creator_address
-            else:
-                logging.warning(f"No creator address found for contract: {contract_address}")
-                return None
+            # Search for the contract address in the pools
+            for pool in pools:
+                coin_type = pool.get('coinType', '')
+                if contract_address in coin_type or coin_type == contract_address:
+                    creator_address = pool.get('creatorAddress')
+                    if creator_address:
+                        logging.info(f"Retrieved creator address: {creator_address}")
+                        return creator_address
+            
+            logging.warning(f"No creator address found for contract: {contract_address}")
+            return None
                 
         except requests.exceptions.RequestException as e:
             logging.error(f"Network error fetching creator address: {e}")
@@ -162,14 +162,18 @@ class TelegramBot:
         """Create inline keyboard with BUY button and wallet explorer link"""
         keyboard = []
         
-        # Add buy button
+        # Add buy button (always show) - use pool_id if coinType is not available
         if coinType:
-            keyboard.append([
-                {
-                    "text": "🚀 BUY TOKEN",
-                    "url": f"https://t.me/RaidenXTradeBot?start=Blastn_sw_{coinType[:20]}"
-                }
-            ])
+            coin_param = coinType[:20]
+        else:
+            coin_param = pool_id[:20]
+            
+        keyboard.append([
+            {
+                "text": "🚀 BUY TOKEN",
+                "url": f"https://t.me/RaidenXTradeBot?start=Blastn_sw_{coin_param}"
+            }
+        ])
         
         # Add wallet explorer button if creator address is available
         if creator_address:
