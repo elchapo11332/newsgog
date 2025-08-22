@@ -95,30 +95,62 @@ class TelegramBot:
             logging.error(f"Error sending photo: {e}")
             return None
     
-    def format_token_message(self, token_name: str, contract_address: str, creatorAddress: str, twitter_handle: Optional[str] = None, coinType: Optional[str] = None) -> str:
-        """Format a new token message for Telegram"""
-        message = f"""🆕 <b>New Token Detected!</b>
+   def format_token_message(
+    self, 
+    token_name: str, 
+    contract_address: str, 
+    creatorAddress: Optional[str] = None, 
+    twitter_handle: Optional[str] = None
+) -> str:
+    """Format a new token message for Telegram"""
+    
+    message = f"""🆕 <b>New Token Detected!</b>
 
 📛 <b>Name:</b> {token_name}
-📜 <b>Contract:</b> <code>{contract_address}</code>
-👤 <b>Dev Wallet:</b> <code>{creatorAddress}</code>
-🔎 <b>View:</b> <a href="https://suiscan.xyz/mainnet/account/{creatorAddress}">SuiScan</a>"""
-        
-        if twitter_handle:
-            message += f"\n❌ <b>X:</b> <a href=\"https://x.com/{twitter_handle}\">@{twitter_handle}</a>"
-        
-        return message
+📜 <b>Contract:</b> <code>{contract_address}</code>"""
     
-    def create_buy_button(self, coinType: str) -> dict:
-        """Create inline keyboard with BUY button"""
-        return {
-            "inline_keyboard": [
-                [
-                    {
-                        "text": "🚀 BUY TOKEN",
-                        "url": f"https://t.me/RaidenXTradeBot?start=Blastn_sw_{coinType[:20]}"
-                    }
-                ]
+    # Dev Wallet vetëm nëse duket si adresë valide (0x...)
+    if creatorAddress and creatorAddress.startswith("0x"):
+        message += f"\n👤 <b>Dev Wallet:</b> <code>{creatorAddress}</code>"
+        message += f"\n🔎 <b>View:</b> <a href=\"https://suiscan.xyz/mainnet/account/{creatorAddress}\">SuiScan</a>"
+    
+    # Twitter vetëm nëse NUK duket kontratë
+    if twitter_handle and not twitter_handle.startswith("0x") and "::" not in twitter_handle:
+        message += f"\n🐦 <b>X:</b> <a href=\"https://x.com/{twitter_handle}\">@{twitter_handle}</a>"
+    
+    return message
+
+
+def create_buttons(self, coinType: str, creatorAddress: Optional[str] = None, twitter_handle: Optional[str] = None) -> dict:
+    """Create inline keyboard with BUY + optional links"""
+    buttons = [
+        [
+            {
+                "text": "🚀 BUY TOKEN",
+                "url": f"https://t.me/RaidenXTradeBot?start=Blastn_sw_{coinType[:20]}"
+            }
+        ]
+    ]
+    
+    # Dev Wallet button
+    if creatorAddress and creatorAddress.startswith("0x"):
+        buttons.append([
+            {
+                "text": "👤 View Dev Wallet",
+                "url": f"https://suiscan.xyz/mainnet/account/{creatorAddress}"
+            }
+        ])
+    
+    # Twitter button
+    if twitter_handle and not twitter_handle.startswith("0x") and "::" not in twitter_handle:
+        buttons.append([
+            {
+                "text": "🐦 Open X",
+                "url": f"https://x.com/{twitter_handle}"
+            }
+        ])
+    
+    return {"inline_keyboard": buttons}
             ]
         }
 
