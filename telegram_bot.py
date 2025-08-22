@@ -101,7 +101,8 @@ class TelegramBot:
 
 📛 <b>Name:</b> {token_name}
 📜 <b>Contract:</b> <code>{contract_address}</code>
-👤 <b>Dev Wallet:</b> <a href="https://suiscan.xyz/mainnet/account/{creatorAddress}">{creatorAddress}</a>"""
+👤 <b>Dev Wallet:</b> <code>{creatorAddress}</code>
+🔎 <b>View:</b> <a href="https://suiscan.xyz/mainnet/account/{creatorAddress}">SuiScan</a>"""
         
         if twitter_handle:
             message += f"\n❌ <b>X:</b> <a href=\"https://x.com/{twitter_handle}\">@{twitter_handle}</a>"
