@@ -275,7 +275,7 @@ class TelegramBot:
             "inline_keyboard": keyboard
         }
     
-    def send_token_notification(self, token_name: str, contract_address: str, pool_id: str, twitter_handle: Optional[str] = None, coinType: Optional[str] = None) -> Optional[dict]:
+    def send_token_notification(self, token_name: str, contract_address: str, pool_id: str, twitter_handle: Optional[str] = None, coinType: Optional[str] = None, creator_address: Optional[str] = None) -> Optional[dict]:
         """Send a complete token notification with creator address information"""
         try:
             # Check if token already processed
@@ -284,8 +284,9 @@ class TelegramBot:
                 logging.info(f"Token already processed, skipping: {token_name}")
                 return None
             
-            # Fetch creator address
-            creator_address = self.get_creator_address(contract_address)
+            # Use provided creator_address or fetch it
+            if not creator_address:
+                creator_address = self.get_creator_address(contract_address)
             
             # Format message with creator address
             message = self.format_token_message(
@@ -317,6 +318,39 @@ class TelegramBot:
         except Exception as e:
             logging.error(f"Error sending token notification: {e}")
             return None
+    
+    def process_latest_tokens(self) -> None:
+        """Process and send notifications for latest tokens"""
+        try:
+            latest_tokens = self.get_latest_tokens()
+            
+            for pool in latest_tokens:
+                token_name = pool.get('coinMetadata', {}).get('name', 'Unknown Token')
+                contract_address = pool.get('coinType', '')
+                pool_id = pool.get('poolId', '')
+                creator_address = pool.get('creatorAddress', '')
+                
+                # Extract Twitter handle from metadata if available
+                twitter_handle = None
+                metadata = pool.get('metadata', {})
+                if 'X' in metadata:
+                    x_url = metadata['X']
+                    # Extract handle from X URL
+                    if 'x.com/' in x_url:
+                        twitter_handle = x_url.split('x.com/')[-1].split('?')[0].split('/')[0]
+                
+                # Send notification with creator address from API
+                self.send_token_notification(
+                    token_name=token_name,
+                    contract_address=contract_address,
+                    pool_id=pool_id,
+                    twitter_handle=twitter_handle,
+                    coinType=contract_address,
+                    creator_address=creator_address
+                )
+                
+        except Exception as e:
+            logging.error(f"Error processing latest tokens: {e}")
 
 # Create a global bot instance
 telegram_bot = TelegramBot()
