@@ -104,6 +104,7 @@ class TelegramBot:
         
 if creatorAddress:
             message += f"\n📜 <b>Dev w:</b> <a href=\"https://suiscan.xyz/mainnet/account/{creatorAddress}\">{creatorAddress}</a>"
+ return message
         if twitter_handle:
             message += f"\n❌ <b>X:</b> <a href=\"https://x.com/{twitter_handle}\">@{twitter_handle}</a>"
         
