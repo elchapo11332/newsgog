@@ -4,7 +4,9 @@ import logging
 import requests
 import base64
 import tempfile
-from typing import Optional, Dict, Any
+import hashlib
+import time
+from typing import Optional, Dict, Any, Set
 
 class TelegramBot:
     def __init__(self):
@@ -18,9 +20,26 @@ class TelegramBot:
         self.wallet_api_key = os.getenv("WALLET_API_KEY", "default_api_key")
         self.wallet_api_url = os.getenv("WALLET_API_URL", "https://api.devwallet.com/v1")
         
+        # Prevent duplicate posts
+        self.sent_messages: Set[str] = set()
+        self.message_timestamps: Dict[str, float] = {}
+        
+    def _create_message_hash(self, text: str, reply_markup: Optional[dict] = None) -> str:
+        """Create a unique hash for the message to prevent duplicates"""
+        content = text + str(reply_markup) if reply_markup else text
+        return hashlib.md5(content.encode()).hexdigest()
+    
     def send_message(self, text: str, reply_markup: Optional[dict] = None) -> Optional[dict]:
-        """Send a message to the configured Telegram chat"""
+        """Send a message to the configured Telegram chat (prevents duplicates)"""
         try:
+            # Create message hash to check for duplicates
+            message_hash = self._create_message_hash(text, reply_markup)
+            
+            # Check if this message was already sent
+            if message_hash in self.sent_messages:
+                logging.warning(f"Duplicate message detected, skipping: {text[:50]}...")
+                return None
+            
             url = f"{self.api_url}/sendMessage"
             payload = {
                 'chat_id': self.chat_id,
@@ -37,6 +56,9 @@ class TelegramBot:
             
             result = response.json()
             if result.get('ok'):
+                # Mark message as sent
+                self.sent_messages.add(message_hash)
+                self.message_timestamps[message_hash] = time.time()
                 logging.info(f"Message sent successfully: {text[:50]}...")
                 return result.get('result')
             else:
