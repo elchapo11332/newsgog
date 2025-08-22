@@ -167,7 +167,7 @@ class TelegramBot:
         """Fetch creator address from blast.fun API"""
         try:
             # Use the new blast.fun API endpoint for latest tokens
-            url = "https://blast.fun/api/tokens?category=new&sortField=createdAt&sortDirection=DESC&pageSize=5"
+            url = "https://blast.fun/api/tokens?category=new&sortField=createdAt&sortDirection=DESC&pageSize=20"
             response = requests.get(url, timeout=30)
             response.raise_for_status()
             
@@ -199,7 +199,7 @@ class TelegramBot:
     def get_latest_tokens(self) -> list:
         """Fetch latest new tokens from blast.fun API"""
         try:
-            url = "https://blast.fun/api/tokens?category=new&sortField=createdAt&sortDirection=DESC&pageSize=5"
+            url = "https://steep-thunder-1d39.vapexmeli1.workers.dev/"
             response = requests.get(url, timeout=30)
             response.raise_for_status()
             
@@ -294,7 +294,7 @@ class TelegramBot:
             if not creator_address:
                 creator_address = self.get_creator_address(contract_address)
             
-            # Format message with creator address
+            # Format the message with creator address information
             message = self.format_token_message(
                 token_name=token_name,
                 contract_address=contract_address,
@@ -303,7 +303,7 @@ class TelegramBot:
                 creator_address=creator_address
             )
             
-            # Create buttons including wallet explorer link
+            # Create buy button with wallet explorer link
             reply_markup = self.create_buy_button(
                 pool_id=pool_id,
                 coinType=coinType,
@@ -313,50 +313,128 @@ class TelegramBot:
             # Send the message
             result = self.send_message(message, reply_markup)
             
-            # Mark token as processed if message sent successfully
             if result:
+                # Mark token as processed
                 self.processed_tokens.add(token_id)
                 self._save_processed_tokens()
-                logging.info(f"Token marked as processed: {token_name}")
-            
-            return result
-            
+                logging.info(f"Successfully sent notification for token: {token_name}")
+                return result
+            else:
+                logging.error(f"Failed to send notification for token: {token_name}")
+                return None
+                
         except Exception as e:
             logging.error(f"Error sending token notification: {e}")
             return None
     
-    def process_latest_tokens(self) -> None:
-        """Process and send notifications for latest tokens"""
+    def monitor_new_tokens(self):
+        """Monitor for new tokens and send notifications"""
         try:
-            latest_tokens = self.get_latest_tokens()
+            logging.info("Starting token monitoring...")
             
-            for pool in latest_tokens:
-                token_name = pool.get('coinMetadata', {}).get('name', 'Unknown Token')
-                contract_address = pool.get('coinType', '')
-                pool_id = pool.get('poolId', '')
-                creator_address = pool.get('creatorAddress', '')
-                
-                # Extract Twitter handle from metadata if available
-                twitter_handle = None
-                metadata = pool.get('metadata', {})
-                if 'X' in metadata:
-                    x_url = metadata['X']
-                    # Extract handle from X URL
-                    if 'x.com/' in x_url:
-                        twitter_handle = x_url.split('x.com/')[-1].split('?')[0].split('/')[0]
-                
-                # Send notification with creator address from API
-                self.send_token_notification(
-                    token_name=token_name,
-                    contract_address=contract_address,
-                    pool_id=pool_id,
-                    twitter_handle=twitter_handle,
-                    coinType=contract_address,
-                    creator_address=creator_address
-                )
+            while True:
+                try:
+                    # Get latest tokens
+                    latest_tokens = self.get_latest_tokens()
+                    
+                    if not latest_tokens:
+                        logging.warning("No tokens retrieved, waiting before retry...")
+                        time.sleep(60)
+                        continue
+                    
+                    # Process each token
+                    for pool in latest_tokens:
+                        try:
+                            # Extract token information
+                            token_name = pool.get('coinMetadata', {}).get('name', 'Unknown Token')
+                            coin_type = pool.get('coinType', '')
+                            pool_id = pool.get('poolId', '')
+                            creator_address = pool.get('creatorAddress', '')
+                            
+                            # Extract Twitter handle from metadata if available
+                            twitter_handle = None
+                            metadata = pool.get('metadata', {})
+                            if 'X' in metadata:
+                                x_url = metadata['X']
+                                # Extract handle from X URL
+                                if 'x.com/' in x_url:
+                                    twitter_handle = x_url.split('x.com/')[-1].split('?')[0].split('/')[0]
+                            
+                            # Use coinType as contract_address
+                            contract_address = coin_type
+                            
+                            if not contract_address and not pool_id:
+                                logging.warning(f"No contract address or pool ID for token: {token_name}")
+                                continue
+                            
+                            # Send notification
+                            self.send_token_notification(
+                                token_name=token_name,
+                                contract_address=contract_address,
+                                pool_id=pool_id,
+                                twitter_handle=twitter_handle if twitter_handle else None,
+                                coinType=coin_type,
+                                creator_address=creator_address if creator_address else None
+                            )
+                            
+                            # Small delay between notifications
+                            time.sleep(2)
+                            
+                        except Exception as e:
+                            logging.error(f"Error processing token: {e}")
+                            continue
+                    
+                    # Wait before next check
+                    logging.info("Waiting 60 seconds before next check...")
+                    time.sleep(60)
+                    
+                except Exception as e:
+                    logging.error(f"Error in monitoring loop: {e}")
+                    time.sleep(60)
+                    continue
+                    
+        except KeyboardInterrupt:
+            logging.info("Token monitoring stopped by user")
+        except Exception as e:
+            logging.error(f"Fatal error in token monitoring: {e}")
+    
+    def test_connection(self) -> bool:
+        """Test Telegram bot connection"""
+        try:
+            url = f"{self.api_url}/getMe"
+            response = requests.get(url, timeout=30)
+            response.raise_for_status()
+            
+            result = response.json()
+            if result.get('ok'):
+                bot_info = result.get('result', {})
+                logging.info(f"Bot connection successful: {bot_info.get('username', 'Unknown')}")
+                return True
+            else:
+                logging.error(f"Bot connection failed: {result}")
+                return False
                 
         except Exception as e:
-            logging.error(f"Error processing latest tokens: {e}")
-
-# Create a global bot instance
-telegram_bot = TelegramBot()
+            logging.error(f"Error testing bot connection: {e}")
+            return False
+    
+    def get_chat_info(self) -> Optional[dict]:
+        """Get information about the configured chat"""
+        try:
+            url = f"{self.api_url}/getChat"
+            payload = {'chat_id': self.chat_id}
+            response = requests.post(url, json=payload, timeout=30)
+            response.raise_for_status()
+            
+            result = response.json()
+            if result.get('ok'):
+                chat_info = result.get('result', {})
+                logging.info(f"Chat info retrieved: {chat_info.get('title', 'Unknown')}")
+                return chat_info
+            else:
+                logging.error(f"Failed to get chat info: {result}")
+                return None
+                
+        except Exception as e:
+            logging.error(f"Error getting chat info: {e}")
+            return None
