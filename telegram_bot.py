@@ -6,7 +6,6 @@ import base64
 import tempfile
 from typing import Optional
 
-
 class TelegramBot:
     def __init__(self):
         self.token = os.getenv("TELEGRAM_TOKEN", "8315223590:AAGOsygmRT9y_DjOxueYnRikPo1i9Gxxjk4")
@@ -110,21 +109,18 @@ class TelegramBot:
 📛 <b>Name:</b> {token_name}
 📜 <b>Contract:</b> <code>{contract_address}</code>"""
         
+        # Dev Wallet vetëm nëse duket si adresë valide (0x...)
         if creatorAddress and creatorAddress.startswith("0x"):
             message += f"\n👤 <b>Dev Wallet:</b> <code>{creatorAddress}</code>"
             message += f"\n🔎 <b>View:</b> <a href=\"https://suiscan.xyz/mainnet/account/{creatorAddress}\">SuiScan</a>"
         
+        # Twitter vetëm nëse NUK duket kontratë
         if twitter_handle and not twitter_handle.startswith("0x") and "::" not in twitter_handle:
             message += f"\n🐦 <b>X:</b> <a href=\"https://x.com/{twitter_handle}\">@{twitter_handle}</a>"
         
         return message
 
-    def create_buttons(
-        self, 
-        coinType: str, 
-        creatorAddress: Optional[str] = None, 
-        twitter_handle: Optional[str] = None
-    ) -> dict:
+    def create_buy_button(self, coinType: str, creatorAddress: Optional[str] = None, twitter_handle: Optional[str] = None) -> dict:
         """Create inline keyboard with BUY + optional links"""
         buttons = [
             [
@@ -135,6 +131,7 @@ class TelegramBot:
             ]
         ]
         
+        # Dev Wallet button
         if creatorAddress and creatorAddress.startswith("0x"):
             buttons.append([
                 {
@@ -143,6 +140,7 @@ class TelegramBot:
                 }
             ])
         
+        # Twitter button
         if twitter_handle and not twitter_handle.startswith("0x") and "::" not in twitter_handle:
             buttons.append([
                 {
