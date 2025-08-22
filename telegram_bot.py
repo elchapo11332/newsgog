@@ -100,11 +100,9 @@ class TelegramBot:
         message = f"""🆕 <b>New Token Detected!</b>
 
 📛 <b>Name:</b> {token_name}
-📜 <b>Contract:</b> <code>{contract_address}</code>"""
+📜 <b>Contract:</b> <code>{contract_address}</code>
+👤 <b>Dev Wallet:</b> <a href="https://suiscan.xyz/mainnet/account/{creatorAddress}">{creatorAddress}</a>"""
         
-if creatorAddress:
-            message += f"\n📜 <b>Dev w:</b> <a href=\"https://suiscan.xyz/mainnet/account/{creatorAddress}\">{creatorAddress}</a>"
- return message
         if twitter_handle:
             message += f"\n❌ <b>X:</b> <a href=\"https://x.com/{twitter_handle}\">@{twitter_handle}</a>"
         
