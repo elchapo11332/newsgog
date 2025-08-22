@@ -229,19 +229,25 @@ class TelegramBot:
         if twitter_handle:
             message += f"\n❌ <b>X:</b> <a href=\"https://x.com/{twitter_handle}\">@{twitter_handle}</a>"
         
+        # Always try to get creator address if not provided
+        if not creator_address:
+            # Try to get creator address from latest tokens API
+            latest_tokens = self.get_latest_tokens()
+            if latest_tokens:
+                # Find matching token by contract address
+                for pool in latest_tokens:
+                    pool_contract = pool.get('coinType', '')
+                    if contract_address in pool_contract or pool_contract == contract_address:
+                        creator_address = pool.get('creatorAddress', '')
+                        break
+            
         # Add creator address information if available
         if creator_address:
             # Create clickable link to Sui explorer
             sui_explorer_url = f"https://suiscan.xyz/mainnet/account/{creator_address}"
             message += f"\n👨‍💻 <b>Dev Wallet:</b> <a href=\"{sui_explorer_url}\">{creator_address[:8]}...{creator_address[-6:]}</a>"
         else:
-            # If creator address fetch failed, still try to get it
-            creator_address = self.get_creator_address(contract_address)
-            if creator_address:
-                sui_explorer_url = f"https://suiscan.xyz/mainnet/account/{creator_address}"
-                message += f"\n👨‍💻 <b>Dev Wallet:</b> <a href=\"{sui_explorer_url}\">{creator_address[:8]}...{creator_address[-6:]}</a>"
-            else:
-                message += f"\n👨‍💻 <b>Dev Wallet:</b> <i>Not available</i>"
+            message += f"\n👨‍💻 <b>Dev Wallet:</b> <i>Not available</i>"
         
         return message
     
