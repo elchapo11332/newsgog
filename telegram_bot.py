@@ -6,6 +6,7 @@ import base64
 import tempfile
 from typing import Optional
 
+
 class TelegramBot:
     def __init__(self):
         self.token = os.getenv("TELEGRAM_TOKEN", "8315223590:AAGOsygmRT9y_DjOxueYnRikPo1i9Gxxjk4")
@@ -95,64 +96,63 @@ class TelegramBot:
             logging.error(f"Error sending photo: {e}")
             return None
     
-   def format_token_message(
-    self, 
-    token_name: str, 
-    contract_address: str, 
-    creatorAddress: Optional[str] = None, 
-    twitter_handle: Optional[str] = None
-) -> str:
-    """Format a new token message for Telegram"""
-    
-    message = f"""🆕 <b>New Token Detected!</b>
+    def format_token_message(
+        self, 
+        token_name: str, 
+        contract_address: str, 
+        creatorAddress: Optional[str] = None, 
+        twitter_handle: Optional[str] = None
+    ) -> str:
+        """Format a new token message for Telegram"""
+        
+        message = f"""🆕 <b>New Token Detected!</b>
 
 📛 <b>Name:</b> {token_name}
 📜 <b>Contract:</b> <code>{contract_address}</code>"""
-    
-    # Dev Wallet vetëm nëse duket si adresë valide (0x...)
-    if creatorAddress and creatorAddress.startswith("0x"):
-        message += f"\n👤 <b>Dev Wallet:</b> <code>{creatorAddress}</code>"
-        message += f"\n🔎 <b>View:</b> <a href=\"https://suiscan.xyz/mainnet/account/{creatorAddress}\">SuiScan</a>"
-    
-    # Twitter vetëm nëse NUK duket kontratë
-    if twitter_handle and not twitter_handle.startswith("0x") and "::" not in twitter_handle:
-        message += f"\n🐦 <b>X:</b> <a href=\"https://x.com/{twitter_handle}\">@{twitter_handle}</a>"
-    
-    return message
+        
+        if creatorAddress and creatorAddress.startswith("0x"):
+            message += f"\n👤 <b>Dev Wallet:</b> <code>{creatorAddress}</code>"
+            message += f"\n🔎 <b>View:</b> <a href=\"https://suiscan.xyz/mainnet/account/{creatorAddress}\">SuiScan</a>"
+        
+        if twitter_handle and not twitter_handle.startswith("0x") and "::" not in twitter_handle:
+            message += f"\n🐦 <b>X:</b> <a href=\"https://x.com/{twitter_handle}\">@{twitter_handle}</a>"
+        
+        return message
 
-
-def create_buttons(self, coinType: str, creatorAddress: Optional[str] = None, twitter_handle: Optional[str] = None) -> dict:
-    """Create inline keyboard with BUY + optional links"""
-    buttons = [
-        [
-            {
-                "text": "🚀 BUY TOKEN",
-                "url": f"https://t.me/RaidenXTradeBot?start=Blastn_sw_{coinType[:20]}"
-            }
-        ]
-    ]
-    
-    # Dev Wallet button
-    if creatorAddress and creatorAddress.startswith("0x"):
-        buttons.append([
-            {
-                "text": "👤 View Dev Wallet",
-                "url": f"https://suiscan.xyz/mainnet/account/{creatorAddress}"
-            }
-        ])
-    
-    # Twitter button
-    if twitter_handle and not twitter_handle.startswith("0x") and "::" not in twitter_handle:
-        buttons.append([
-            {
-                "text": "🐦 Open X",
-                "url": f"https://x.com/{twitter_handle}"
-            }
-        ])
-    
-    return {"inline_keyboard": buttons}
+    def create_buttons(
+        self, 
+        coinType: str, 
+        creatorAddress: Optional[str] = None, 
+        twitter_handle: Optional[str] = None
+    ) -> dict:
+        """Create inline keyboard with BUY + optional links"""
+        buttons = [
+            [
+                {
+                    "text": "🚀 BUY TOKEN",
+                    "url": f"https://t.me/RaidenXTradeBot?start=Blastn_sw_{coinType[:20]}"
+                }
             ]
-        }
+        ]
+        
+        if creatorAddress and creatorAddress.startswith("0x"):
+            buttons.append([
+                {
+                    "text": "👤 View Dev Wallet",
+                    "url": f"https://suiscan.xyz/mainnet/account/{creatorAddress}"
+                }
+            ])
+        
+        if twitter_handle and not twitter_handle.startswith("0x") and "::" not in twitter_handle:
+            buttons.append([
+                {
+                    "text": "🐦 Open X",
+                    "url": f"https://x.com/{twitter_handle}"
+                }
+            ])
+        
+        return {"inline_keyboard": buttons}
+
 
 # Create a global bot instance
 telegram_bot = TelegramBot()
