@@ -20,10 +20,52 @@ class TelegramBot:
         self.wallet_api_key = os.getenv("WALLET_API_KEY", "default_api_key")
         self.wallet_api_url = os.getenv("WALLET_API_URL", "https://api.devwallet.com/v1")
         
-        # Prevent duplicate posts
-        self.sent_messages: Set[str] = set()
-        self.message_timestamps: Dict[str, float] = {}
+        # Prevent duplicate posts with file-based persistence
+        self.sent_messages_file = "sent_messages.json"
+        self.processed_tokens_file = "processed_tokens.json"
+        self.sent_messages: Set[str] = self._load_sent_messages()
+        self.processed_tokens: Set[str] = self._load_processed_tokens()
         
+    def _load_sent_messages(self) -> Set[str]:
+        """Load sent messages from file"""
+        try:
+            if os.path.exists(self.sent_messages_file):
+                with open(self.sent_messages_file, 'r') as f:
+                    data = json.load(f)
+                    return set(data.get('messages', []))
+            return set()
+        except Exception as e:
+            logging.error(f"Error loading sent messages: {e}")
+            return set()
+    
+    def _save_sent_messages(self):
+        """Save sent messages to file"""
+        try:
+            with open(self.sent_messages_file, 'w') as f:
+                json.dump({'messages': list(self.sent_messages)}, f)
+        except Exception as e:
+            logging.error(f"Error saving sent messages: {e}")
+    
+    def _load_processed_tokens(self) -> Set[str]:
+        """Load processed tokens from file"""
+        try:
+            if os.path.exists(self.processed_tokens_file):
+                with open(self.processed_tokens_file, 'r') as f:
+                    data = json.load(f)
+                    return set(data.get('tokens', []))
+            return set()
+        except Exception as e:
+            logging.error(f"Error loading processed tokens: {e}")
+            return set()
+    
+    def _save_processed_tokens(self):
+        """Save processed tokens to file"""
+        try:
+            with open(self.processed_tokens_file, 'w') as f:
+                json.dump({'tokens': list(self.processed_tokens)}, f)
+        except Exception as e:
+            logging.error(f"Error saving processed tokens: {e}")
+    
     def _create_message_hash(self, text: str, reply_markup: Optional[dict] = None) -> str:
         """Create a unique hash for the message to prevent duplicates"""
         content = text + str(reply_markup) if reply_markup else text
@@ -56,9 +98,9 @@ class TelegramBot:
             
             result = response.json()
             if result.get('ok'):
-                # Mark message as sent
+                # Mark message as sent and save to file
                 self.sent_messages.add(message_hash)
-                self.message_timestamps[message_hash] = time.time()
+                self._save_sent_messages()
                 logging.info(f"Message sent successfully: {text[:50]}...")
                 return result.get('result')
             else:
@@ -122,10 +164,10 @@ class TelegramBot:
             return None
     
     def get_creator_address(self, contract_address: str) -> Optional[str]:
-        """Fetch creator address from dev wallet API"""
+        """Fetch creator address from blast.fun API"""
         try:
-            # Use the specific API endpoint
-            url = "https://steep-thunder-1d39.vapexmeli1.workers.dev/"
+            # Use the new blast.fun API endpoint for latest tokens
+            url = "https://blast.fun/api/tokens?category=new&sortField=createdAt&sortDirection=DESC&pageSize=5"
             response = requests.get(url, timeout=30)
             response.raise_for_status()
             
@@ -153,6 +195,29 @@ class TelegramBot:
         except Exception as e:
             logging.error(f"Unexpected error fetching creator address: {e}")
             return None
+    
+    def get_latest_tokens(self) -> list:
+        """Fetch latest new tokens from blast.fun API"""
+        try:
+            url = "https://blast.fun/api/tokens?category=new&sortField=createdAt&sortDirection=DESC&pageSize=5"
+            response = requests.get(url, timeout=30)
+            response.raise_for_status()
+            
+            data = response.json()
+            pools = data.get('pools', [])
+            
+            logging.info(f"Retrieved {len(pools)} latest tokens")
+            return pools
+                
+        except requests.exceptions.RequestException as e:
+            logging.error(f"Network error fetching latest tokens: {e}")
+            return []
+        except json.JSONDecodeError as e:
+            logging.error(f"JSON decode error: {e}")
+            return []
+        except Exception as e:
+            logging.error(f"Unexpected error fetching latest tokens: {e}")
+            return []
     
     def format_token_message(self, token_name: str, contract_address: str, twitter_handle: Optional[str] = None, coinType: Optional[str] = None, creator_address: Optional[str] = None) -> str:
         """Format a new token message for Telegram with creator address information"""
@@ -213,6 +278,12 @@ class TelegramBot:
     def send_token_notification(self, token_name: str, contract_address: str, pool_id: str, twitter_handle: Optional[str] = None, coinType: Optional[str] = None) -> Optional[dict]:
         """Send a complete token notification with creator address information"""
         try:
+            # Check if token already processed
+            token_id = contract_address or pool_id
+            if token_id in self.processed_tokens:
+                logging.info(f"Token already processed, skipping: {token_name}")
+                return None
+            
             # Fetch creator address
             creator_address = self.get_creator_address(contract_address)
             
@@ -233,7 +304,15 @@ class TelegramBot:
             )
             
             # Send the message
-            return self.send_message(message, reply_markup)
+            result = self.send_message(message, reply_markup)
+            
+            # Mark token as processed if message sent successfully
+            if result:
+                self.processed_tokens.add(token_id)
+                self._save_processed_tokens()
+                logging.info(f"Token marked as processed: {token_name}")
+            
+            return result
             
         except Exception as e:
             logging.error(f"Error sending token notification: {e}")
