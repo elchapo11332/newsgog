@@ -107,7 +107,7 @@ class TelegramBot:
         
         return message
     
-    def create_buy_button(self, pool_id: str) -> dict:
+    def create_buy_button(self, coinType: str) -> dict:
         """Create inline keyboard with BUY button"""
         return {
             "inline_keyboard": [
