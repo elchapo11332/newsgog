@@ -126,14 +126,14 @@ class CryptoMonitor:
 
                 # Ndërtojmë mesazhin për Telegram
                 message = telegram_bot.format_token_message(
-                    name,
-                    contract,
-                    twitter_handle,
-                    pool_id,
+                    token_name=name,
+                    contract_address=contract,
+                    twitter_handle=twitter_handle,
+                    coinType=pool_id,
                     creator_address=creator_address,
                     market_cap=market_cap,
                     is_protected=is_protected,
-                    dev_buy=dev_buy_text,   # 🚀 shtuar
+                    dev_initial_buy=dev_buy_text,   # ✅ tani përputhet
                 )
                 buy_button = (
                     telegram_bot.create_buy_button(pool_id) if pool_id else None
