@@ -95,7 +95,14 @@ class TelegramBot:
             logging.error(f"Error sending photo: {e}")
             return None
     
-    def format_token_message(self, token_name: str, contract_address: str, twitter_handle: Optional[str] = None, coinType: Optional[str] = None) -> str:
+    def format_token_message(
+        self,
+        token_name: str,
+        contract_address: str,
+        twitter_handle: Optional[str] = None,
+        coinType: Optional[str] = None,
+        creator_address: Optional[str] = None   # NEW
+    ) -> str:
         """Format a new token message for Telegram"""
         message = f"""🆕 <b>New Token Detected!</b>
 
@@ -104,6 +111,9 @@ class TelegramBot:
         
         if twitter_handle:
             message += f"\n❌ <b>X:</b> <a href=\"https://x.com/{twitter_handle}\">@{twitter_handle}</a>"
+        
+        if creator_address:
+            message += f"\n👤 <b>Creator:</b> <a href=\"https://suiscan.xyz/mainnet/account/{creator_address}\">{creator_address[:6]}...{creator_address[-4:]}</a>"
         
         return message
     
