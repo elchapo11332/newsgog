@@ -8,6 +8,7 @@ from models import PostedToken, MonitorStats
 from telegram_bot import telegram_bot
 from flask_socketio import emit
 
+
 class CryptoMonitor:
     def __init__(self):
         self.api_url = "https://steep-thunder-1d39.vapexmeli1.workers.dev/"
@@ -108,11 +109,22 @@ class CryptoMonitor:
                 market_cap = market_data.get("marketCap")
                 is_protected = pool.get("isProtected")  # ✅ FIX
 
+                # 🚀 Marrim Dev Initial Buy
+                creator_balance = pool.get("creatorBalance")
+                creator_percent = pool.get("creatorPercent")  # disa API japin %
+                dev_buy_text = None
+                if creator_balance:
+                    if creator_percent:
+                        dev_buy_text = f"Dev Initial: {creator_balance:,} tokens ({creator_percent}%)"
+                    else:
+                        dev_buy_text = f"Dev Initial: {creator_balance:,} tokens"
+
                 # 📢 Log para postimit
                 logging.warning(
-                    f"📢 Going to post token: {name} ({contract}) | MarketCap: {market_cap} | Protected: {is_protected}"
+                    f"📢 Going to post token: {name} ({contract}) | MarketCap: {market_cap} | Protected: {is_protected} | Dev: {dev_buy_text}"
                 )
 
+                # Ndërtojmë mesazhin për Telegram
                 message = telegram_bot.format_token_message(
                     name,
                     contract,
@@ -121,6 +133,7 @@ class CryptoMonitor:
                     creator_address=creator_address,
                     market_cap=market_cap,
                     is_protected=is_protected,
+                    dev_buy=dev_buy_text,   # 🚀 shtuar
                 )
                 buy_button = (
                     telegram_bot.create_buy_button(pool_id) if pool_id else None
