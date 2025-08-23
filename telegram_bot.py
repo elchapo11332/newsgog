@@ -101,7 +101,8 @@ class TelegramBot:
         contract_address: str,
         twitter_handle: Optional[str] = None,
         coinType: Optional[str] = None,
-        creator_address: Optional[str] = None   # NEW
+        creator_address: Optional[str] = None,
+        market_cap: Optional[float] = None   # NEW
     ) -> str:
         """Format a new token message for Telegram"""
         message = f"""🆕 <b>New Token Detected!</b>
@@ -114,6 +115,9 @@ class TelegramBot:
         
         if creator_address:
             message += f"\n👤 <b>Creator:</b> <a href=\"https://suiscan.xyz/mainnet/account/{creator_address}\">{creator_address[:6]}...{creator_address[-4:]}</a>"
+        
+        if market_cap is not None:
+            message += f"\n💰 <b>MarketCap:</b> ${market_cap:,.2f}"
         
         return message
     
