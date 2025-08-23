@@ -4,10 +4,19 @@ import threading
 import logging
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
+
     # Start the monitoring service in a separate thread
     monitor_thread = threading.Thread(target=start_monitoring, daemon=True)
     monitor_thread.start()
-    logging.info("Crypto monitoring service started")
+    logging.info("Crypto monitoring service started ✅")
     
     # Start the Flask-SocketIO server
-    socketio.run(app, host='0.0.0.0', port=5000, debug=True, allow_unsafe_werkzeug=True, use_reloader=False, log_output=True)
+    socketio.run(
+        app,
+        host='0.0.0.0',
+        port=5000,
+        debug=False,  # 🚫 mos e përdor debug në prodhim
+        allow_unsafe_werkzeug=True,
+        use_reloader=False,
+    )
