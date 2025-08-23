@@ -37,7 +37,7 @@ class CryptoMonitor:
     def is_token_posted(self, contract_address: str) -> bool:
         with app.app_context():
             return (
-                PostedToken.query.filter_by(contract_address=contract_address).first()
+                PostedToken.query.filter_by(contract_address=contract_address.lower()).first()
                 is not None
             )
 
@@ -47,7 +47,7 @@ class CryptoMonitor:
         with app.app_context():
             token = PostedToken(
                 name=name,
-                contract_address=contract_address,
+                contract_address=contract_address.lower(),
                 telegram_message_id=telegram_message_id,
             )
             db.session.add(token)
@@ -77,6 +77,8 @@ class CryptoMonitor:
                 if not contract:
                     continue
 
+                contract = contract.lower()  # 🚀 gjithmonë lowercase
+
                 # 🚫 Kontroll i fortë: vetëm një herë për çdo contract
                 if self.is_token_posted(contract):
                     logging.debug(f"Already posted: {contract}")
@@ -101,7 +103,8 @@ class CryptoMonitor:
                 twitter_handle = metadata.get("CreatorTwitterName")
                 token_image = coin_metadata.get("icon_url") or coin_metadata.get("iconUrl")
 
-                logging.info(f"🚀 New token found: {name} ({contract})")
+                # 📢 Log para postimit
+                logging.warning(f"📢 Going to post token: {name} ({contract})")
 
                 message = telegram_bot.format_token_message(
                     name, contract, twitter_handle, pool_id
@@ -134,6 +137,10 @@ class CryptoMonitor:
 
     # ====================== Monitor Loop ======================
     def monitor_loop(self):
+        if self.running:  # 🚫 mos e nis nëse është aktiv
+            logging.warning("Monitor loop already running, skipping...")
+            return
+
         logging.info("Starting monitor loop")
         self.running = True
         self.update_stats(is_running=True)
@@ -172,6 +179,9 @@ monitor = CryptoMonitor()
 
 
 def start_monitoring():
+    if monitor.running:  # 🚫 mbrojtje
+        logging.warning("Monitor already running, skipping start")
+        return
     try:
         monitor.monitor_loop()
     except Exception as e:
