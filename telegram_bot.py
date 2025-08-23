@@ -102,7 +102,8 @@ class TelegramBot:
         twitter_handle: Optional[str] = None,
         coinType: Optional[str] = None,
         creator_address: Optional[str] = None,
-        market_cap: Optional[float] = None   # NEW
+        market_cap: Optional[float] = None,
+        is_protected: Optional[bool] = None   # NEW
     ) -> str:
         """Format a new token message for Telegram"""
         message = f"""🆕 <b>New Token Detected!</b>
@@ -118,6 +119,10 @@ class TelegramBot:
         
         if market_cap is not None:
             message += f"\n💰 <b>MarketCap:</b> ${market_cap:,.2f}"
+
+        if is_protected is not None:
+            status = "✅ Protected" if is_protected else "⚠️ Not Protected"
+            message += f"\n🛡️ <b>Security:</b> {status}"
         
         return message
     
