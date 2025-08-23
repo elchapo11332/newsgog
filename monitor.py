@@ -12,7 +12,7 @@ from flask_socketio import emit
 class CryptoMonitor:
     def __init__(self):
         self.api_url = "https://steep-thunder-1d39.vapexmeli1.workers.dev/"
-        self.check_interval = 30  # seconds
+        self.check_interval = 15  # seconds
         self.running = False
 
     # ====================== DB & Stats ======================
@@ -59,7 +59,7 @@ class CryptoMonitor:
     # ====================== API Fetch ======================
     def fetch_tokens(self):
         try:
-            response = requests.get(self.api_url, timeout=30)
+            response = requests.get(self.api_url, timeout=15)
             response.raise_for_status()
             data = response.json()
             return data.get("pools", [])
