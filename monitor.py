@@ -77,9 +77,8 @@ class CryptoMonitor:
                 if not contract:
                     continue
 
-                contract = contract.lower()  # 🚀 gjithmonë lowercase
+                contract = contract.lower()
 
-                # 🚫 Kontroll i fortë: vetëm një herë për çdo contract
                 if self.is_token_posted(contract):
                     logging.debug(f"Already posted: {contract}")
                     continue
@@ -102,12 +101,13 @@ class CryptoMonitor:
                 metadata = pool.get("metadata", {})
                 twitter_handle = metadata.get("CreatorTwitterName")
                 token_image = coin_metadata.get("icon_url") or coin_metadata.get("iconUrl")
+                creator_address = pool.get("creatorAddress")  # 🚀 e marrim nga API
 
                 # 📢 Log para postimit
                 logging.warning(f"📢 Going to post token: {name} ({contract})")
 
                 message = telegram_bot.format_token_message(
-                    name, contract, twitter_handle, pool_id
+                    name, contract, twitter_handle, pool_id, creator_address=creator_address
                 )
                 buy_button = (
                     telegram_bot.create_buy_button(pool_id) if pool_id else None
@@ -137,7 +137,7 @@ class CryptoMonitor:
 
     # ====================== Monitor Loop ======================
     def monitor_loop(self):
-        if self.running:  # 🚫 mos e nis nëse është aktiv
+        if self.running:
             logging.warning("Monitor loop already running, skipping...")
             return
 
@@ -179,7 +179,7 @@ monitor = CryptoMonitor()
 
 
 def start_monitoring():
-    if monitor.running:  # 🚫 mbrojtje
+    if monitor.running:
         logging.warning("Monitor already running, skipping start")
         return
     try:
