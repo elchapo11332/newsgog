@@ -103,13 +103,14 @@ class CryptoMonitor:
                 token_image = coin_metadata.get("icon_url") or coin_metadata.get("iconUrl")
                 creator_address = pool.get("creatorAddress")  # 🚀 nga API
 
-                # Marrim MarketCap nga marketData
+                # Marrim MarketCap dhe isProtected nga marketData
                 market_data = pool.get("marketData", {})
                 market_cap = market_data.get("marketCap")
+                is_protected = market_data.get("isProtected")
 
                 # 📢 Log para postimit
                 logging.warning(
-                    f"📢 Going to post token: {name} ({contract}) | MarketCap: {market_cap}"
+                    f"📢 Going to post token: {name} ({contract}) | MarketCap: {market_cap} | Protected: {is_protected}"
                 )
 
                 message = telegram_bot.format_token_message(
@@ -118,7 +119,8 @@ class CryptoMonitor:
                     twitter_handle,
                     pool_id,
                     creator_address=creator_address,
-                    market_cap=market_cap,  # ➕ shtohet këtu
+                    market_cap=market_cap,   # ➕ shtohet
+                    is_protected=is_protected,  # ➕ shtohet
                 )
                 buy_button = (
                     telegram_bot.create_buy_button(pool_id) if pool_id else None
