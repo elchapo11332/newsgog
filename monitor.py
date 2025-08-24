@@ -99,8 +99,6 @@ class CryptoMonitor:
                     continue
 
                 pool_id = pool.get("coinType")
-                metadata = pool.get("metadata", {})
-                twitter_handle = metadata.get("CreatorTwitterName")
                 token_image = coin_metadata.get("icon_url") or coin_metadata.get("iconUrl")
                 creator_address = pool.get("creatorAddress")
 
@@ -109,23 +107,26 @@ class CryptoMonitor:
                 market_cap = market_data.get("marketCap")
                 is_protected = pool.get("isProtected")
 
-                # 🚀 Marrim Dev Initial Buy
+                # 🚀 Marrim Dev Initial Buy (nga blast.fun fields)
                 creator_balance = pool.get("creatorBalance")
                 creator_percent = pool.get("creatorPercent")
                 dev_buy_text = None
                 if creator_balance:
                     if creator_percent:
-                        dev_buy_text = f"Dev Initial: {creator_balance:,} tokens ({creator_percent}%)"
+                        dev_buy_text = f"Dev Initial Buy: {creator_balance:,} tokens ({creator_percent}%)"
                     else:
-                        dev_buy_text = f"Dev Initial: {creator_balance:,} tokens"
+                        dev_buy_text = f"Dev Initial Buy: {creator_balance:,} tokens"
 
-                # 🚀 Followers nga root, jo metadata
-                followers = pool.get("followers") or 0
+                # 🚀 Followers + Twitter nga creatorData
+                creator_data = pool.get("creatorData", {})
+                followers = creator_data.get("followers", 0)
+                trusted_followers = creator_data.get("trustedFollowers", 0)
+                twitter_handle = creator_data.get("twitterHandle")
 
                 # 📢 Log para postimit
                 logging.warning(
                     f"📢 Going to post token: {name} ({contract}) | MC: {market_cap} | "
-                    f"Protected: {is_protected} | Dev: {dev_buy_text} | Followers: {followers}"
+                    f"Protected: {is_protected} | Dev: {dev_buy_text} | Followers: {followers} | Trusted: {trusted_followers}"
                 )
 
                 # Ndërtojmë mesazhin për Telegram
@@ -137,7 +138,8 @@ class CryptoMonitor:
                     creator_address=creator_address,
                     market_cap=market_cap,
                     is_protected=is_protected,
-                    followers=followers
+                    followers=followers,
+                    trusted_followers=trusted_followers
                 )
 
                 # Shtojmë manualisht Dev Buy në message
