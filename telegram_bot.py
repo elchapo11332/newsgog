@@ -13,9 +13,7 @@ class TelegramBot:
         chat_id_env = os.getenv("CHAT_ID", "-1003083174899")
         self.chat_id = chat_id_env if chat_id_env.startswith('-') else f'-{chat_id_env}'
         self.api_url = f"https://api.telegram.org/bot{self.token}"
-
-        # blast.fun API (ku jane followers dhe dev buy)
-        self.blast_api = "https://steep-thunder-1d39.vapexmeli1.workers.dev"
+        self.followers_api = "https://steep-thunder-1d39.vapexmeli1.workers.dev/"
 
     def send_message(self, text: str, reply_markup: Optional[dict] = None) -> Optional[dict]:
         try:
@@ -27,7 +25,7 @@ class TelegramBot:
                 'disable_web_page_preview': True
             }
             if reply_markup:
-                payload['reply_markup'] = json.dumps(reply_markup)
+                payload['reply_markup'] = reply_markup
             response = requests.post(url, json=payload, timeout=30)
             response.raise_for_status()
             result = response.json()
@@ -76,33 +74,21 @@ class TelegramBot:
             logging.error(f"Error sending photo: {e}")
             return None
 
-    def get_followers(self, pool_id: str) -> Optional[int]:
-        """Fetch followers from blast.fun API"""
+    def get_followers(self, contract_address: str) -> Optional[int]:
+        """Fetch followers from custom API"""
         try:
-            url = f"{self.blast_api}/pools/{pool_id}"
-            response = requests.get(url, timeout=15)
+            response = requests.get(self.followers_api, timeout=15)
             response.raise_for_status()
             data = response.json()
 
-            creator_data = data.get("creatorData", {})
-            followers = creator_data.get("followers") or creator_data.get("trustedFollowers")
-            return int(followers) if followers else 0
+            for pool in data.get("pools", []):
+                if pool.get("poolId") == contract_address:
+                    creator_data = pool.get("creatorData", {})
+                    return int(creator_data.get("followers", 0))
+
+            return 0
         except Exception as e:
             logging.error(f"Error fetching followers: {e}")
-            return None
-
-    def get_dev_initial_buy(self, pool_id: str) -> Optional[str]:
-        """Fetch Dev initial buy info from blast.fun"""
-        try:
-            url = f"{self.blast_api}/pools/{pool_id}"
-            response = requests.get(url, timeout=15)
-            response.raise_for_status()
-            data = response.json()
-
-            dev_buy = data.get("creatorData", {}).get("devInitialBuy")
-            return f"{dev_buy} SUI" if dev_buy else None
-        except Exception as e:
-            logging.error(f"Error fetching dev initial buy: {e}")
             return None
 
     def format_token_message(
@@ -114,16 +100,12 @@ class TelegramBot:
         creator_address: Optional[str] = None,
         market_cap: Optional[float] = None,
         is_protected: Optional[bool] = None,
-        followers: Optional[int] = None,
-        dev_initial_buy: Optional[str] = None,
-        pool_id: Optional[str] = None
+        followers: Optional[int] = None
     ) -> str:
         """Format Telegram message for a token"""
 
-        if followers is None and pool_id:
-            followers = self.get_followers(pool_id)
-        if dev_initial_buy is None and pool_id:
-            dev_initial_buy = self.get_dev_initial_buy(pool_id)
+        if followers is None:
+            followers = self.get_followers(contract_address)
 
         message = f"""🆕 <b>New Token Detected!</b>
 
@@ -145,9 +127,6 @@ class TelegramBot:
         if is_protected is not None:
             status = "✅ Protected" if is_protected else "⚠️ Not Protected"
             message += f"\n🛡️ <b>Security:</b> {status}"
-
-        if dev_initial_buy:
-            message += f"\n🛒 <b>Dev Initial Buy:</b> {dev_initial_buy}"
 
         return message
 
