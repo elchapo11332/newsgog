@@ -109,11 +109,17 @@ class TelegramBot:
         coinType: Optional[str] = None,
         creator_address: Optional[str] = None,
         market_cap: Optional[float] = None,
-        is_protected: Optional[bool] = None
+        is_protected: Optional[bool] = None,
+        followers: Optional[int] = None,
+        dev_initial_buy: Optional[str] = None
     ) -> str:
+        """Format Telegram message for a token"""
 
-        followers = self.get_followers(contract_address)
-        dev_initial_buy = self.get_dev_initial_buy(creator_address) if creator_address else None
+        # nëse nuk janë dërguar si argument, i merr vetë
+        if followers is None:
+            followers = self.get_followers(contract_address)
+        if dev_initial_buy is None and creator_address:
+            dev_initial_buy = self.get_dev_initial_buy(creator_address)
 
         message = f"""🆕 <b>New Token Detected!</b>
 
@@ -155,4 +161,3 @@ class TelegramBot:
 
 
 telegram_bot = TelegramBot()
- 
