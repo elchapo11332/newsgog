@@ -133,7 +133,7 @@ class CryptoMonitor:
                     creator_address=creator_address,
                     market_cap=market_cap,
                     is_protected=is_protected,
-                    dev_initial_buy=dev_buy_text,   # ✅ tani përputhet
+                    pool_id=poolId,   # ✅ tani përputhet
                 )
                 buy_button = (
                     telegram_bot.create_buy_button(pool_id) if pool_id else None
