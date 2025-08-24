@@ -101,6 +101,7 @@ class CryptoMonitor:
                 pool_id = pool.get("coinType")
                 metadata = pool.get("metadata", {})
                 twitter_handle = metadata.get("CreatorTwitterName")
+                followers = metadata.get("followers")   # ✅ followers nga API
                 token_image = coin_metadata.get("icon_url") or coin_metadata.get("iconUrl")
                 creator_address = pool.get("creatorAddress")  # 🚀 nga API
 
@@ -121,7 +122,7 @@ class CryptoMonitor:
 
                 # 📢 Log para postimit
                 logging.warning(
-                    f"📢 Going to post token: {name} ({contract}) | MarketCap: {market_cap} | Protected: {is_protected} | Dev: {dev_buy_text}"
+                    f"📢 Going to post token: {name} ({contract}) | MarketCap: {market_cap} | Protected: {is_protected} | Followers: {followers} | Dev: {dev_buy_text}"
                 )
 
                 # Ndërtojmë mesazhin për Telegram
@@ -134,6 +135,7 @@ class CryptoMonitor:
                     market_cap=market_cap,
                     is_protected=is_protected,
                     dev_initial_buy=dev_buy_text,   # ✅ tani përputhet
+                    followers=followers,            # ✅ shtuar followers
                 )
                 buy_button = (
                     telegram_bot.create_buy_button(pool_id) if pool_id else None
