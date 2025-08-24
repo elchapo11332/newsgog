@@ -101,18 +101,17 @@ class CryptoMonitor:
                 pool_id = pool.get("coinType")
                 metadata = pool.get("metadata", {})
                 twitter_handle = metadata.get("CreatorTwitterName")
-                followers = metadata.get("followers")   # ✅ followers nga API
                 token_image = coin_metadata.get("icon_url") or coin_metadata.get("iconUrl")
-                creator_address = pool.get("creatorAddress")  # 🚀 nga API
+                creator_address = pool.get("creatorAddress")
 
                 # Marrim MarketCap nga marketData dhe isProtected direkt nga pool
                 market_data = pool.get("marketData", {})
                 market_cap = market_data.get("marketCap")
-                is_protected = pool.get("isProtected")  # ✅ FIX
+                is_protected = pool.get("isProtected")
 
                 # 🚀 Marrim Dev Initial Buy
                 creator_balance = pool.get("creatorBalance")
-                creator_percent = pool.get("creatorPercent")  # disa API japin %
+                creator_percent = pool.get("creatorPercent")
                 dev_buy_text = None
                 if creator_balance:
                     if creator_percent:
@@ -120,9 +119,12 @@ class CryptoMonitor:
                     else:
                         dev_buy_text = f"Dev Initial: {creator_balance:,} tokens"
 
+                # 🚀 Followers
+                followers = metadata.get("followers") or 0
+
                 # 📢 Log para postimit
                 logging.warning(
-                    f"📢 Going to post token: {name} ({contract}) | MarketCap: {market_cap} | Protected: {is_protected} | Followers: {followers} | Dev: {dev_buy_text}"
+                    f"📢 Going to post token: {name} ({contract}) | MC: {market_cap} | Protected: {is_protected} | Dev: {dev_buy_text} | Followers: {followers}"
                 )
 
                 # Ndërtojmë mesazhin për Telegram
@@ -134,8 +136,8 @@ class CryptoMonitor:
                     creator_address=creator_address,
                     market_cap=market_cap,
                     is_protected=is_protected,
-                    dev_initial_buy=dev_buy_text,   # ✅ tani përputhet
-                    followers=followers,            # ✅ shtuar followers
+                    dev_initial_buy=dev_buy_text,   # ✅ FIX
+                    followers=followers             # ✅ followers
                 )
                 buy_button = (
                     telegram_bot.create_buy_button(pool_id) if pool_id else None
