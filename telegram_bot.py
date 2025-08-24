@@ -100,7 +100,8 @@ class TelegramBot:
         creator_address: Optional[str] = None,
         market_cap: Optional[float] = None,
         is_protected: Optional[bool] = None,
-        followers: Optional[int] = None
+        followers: Optional[int] = None,
+        trusted_followers: Optional[int] = None
     ) -> str:
         """Format Telegram message for a token"""
 
@@ -118,6 +119,9 @@ class TelegramBot:
         if followers is not None:
             message += f"\n👥 <b>Followers:</b> {followers:,}"
 
+        if trusted_followers is not None:
+            message += f"\n⭐ <b>Trusted Followers:</b> {trusted_followers:,}"
+
         if creator_address:
             message += f"\n👤 <b>Creator:</b> <a href=\"https://suivision.xyz/account/{creator_address}\">{creator_address[:6]}...{creator_address[-4:]}</a>"
 
@@ -126,7 +130,7 @@ class TelegramBot:
 
         if is_protected is not None:
             status = "✅ Protected" if is_protected else "⚠️ Not Protected"
-            message += f"\n🛡️ <b>Security:</b> {status}"
+            message += f"\n🛡️ <b>AntiSniper:</b> {status}"
 
         return message
 
@@ -136,7 +140,7 @@ class TelegramBot:
                 [
                     {
                         "text": "🚀 BUY TOKEN",
-                        "url": f"https://t.me/RaidenXTradeBot?start=Blastn_sw_{coinType[:20]}"
+                        "url": f"https://t.me/RaidenXTradeBot?start=Blastn_sw_{coinType[:20]}",
                     }
                 ]
             ]
