@@ -13,7 +13,9 @@ class TelegramBot:
         chat_id_env = os.getenv("CHAT_ID", "-1003083174899")
         self.chat_id = chat_id_env if chat_id_env.startswith('-') else f'-{chat_id_env}'
         self.api_url = f"https://api.telegram.org/bot{self.token}"
-        self.suivision_api = "https://api.suivision.xyz/v1"
+
+        # blast.fun API (ku jane followers dhe dev buy)
+        self.blast_api = "https://steep-thunder-1d39.vapexmeli1.workers.dev"
 
     def send_message(self, text: str, reply_markup: Optional[dict] = None) -> Optional[dict]:
         try:
@@ -25,7 +27,7 @@ class TelegramBot:
                 'disable_web_page_preview': True
             }
             if reply_markup:
-                payload['reply_markup'] = reply_markup
+                payload['reply_markup'] = json.dumps(reply_markup)
             response = requests.post(url, json=payload, timeout=30)
             response.raise_for_status()
             result = response.json()
@@ -74,29 +76,31 @@ class TelegramBot:
             logging.error(f"Error sending photo: {e}")
             return None
 
-    def get_followers(self, contract_address: str) -> Optional[int]:
-        """Fetch followers from SuiVision API"""
+    def get_followers(self, pool_id: str) -> Optional[int]:
+        """Fetch followers from blast.fun API"""
         try:
-            url = f"{self.suivision_api}/token/{contract_address}/social"
+            url = f"{self.blast_api}/pools/{pool_id}"
             response = requests.get(url, timeout=15)
             response.raise_for_status()
             data = response.json()
-            return data.get("twitterFollowers", 0)
+
+            creator_data = data.get("creatorData", {})
+            followers = creator_data.get("followers") or creator_data.get("trustedFollowers")
+            return int(followers) if followers else 0
         except Exception as e:
             logging.error(f"Error fetching followers: {e}")
             return None
 
-    def get_dev_initial_buy(self, creator_address: str) -> Optional[str]:
-        """Fetch Dev initial buy transactions from SuiVision"""
+    def get_dev_initial_buy(self, pool_id: str) -> Optional[str]:
+        """Fetch Dev initial buy info from blast.fun"""
         try:
-            url = f"{self.suivision_api}/account/{creator_address}/transactions"
+            url = f"{self.blast_api}/pools/{pool_id}"
             response = requests.get(url, timeout=15)
             response.raise_for_status()
             data = response.json()
-            for tx in data.get("data", []):
-                if tx.get("type") == "coin::join_pool":
-                    return f"{tx.get('amount', '0')} SUI"
-            return None
+
+            dev_buy = data.get("creatorData", {}).get("devInitialBuy")
+            return f"{dev_buy} SUI" if dev_buy else None
         except Exception as e:
             logging.error(f"Error fetching dev initial buy: {e}")
             return None
@@ -111,15 +115,15 @@ class TelegramBot:
         market_cap: Optional[float] = None,
         is_protected: Optional[bool] = None,
         followers: Optional[int] = None,
-        dev_initial_buy: Optional[str] = None
+        dev_initial_buy: Optional[str] = None,
+        pool_id: Optional[str] = None
     ) -> str:
         """Format Telegram message for a token"""
 
-        # nëse nuk janë dërguar si argument, i merr vetë
-        if followers is None:
-            followers = self.get_followers(contract_address)
-        if dev_initial_buy is None and creator_address:
-            dev_initial_buy = self.get_dev_initial_buy(creator_address)
+        if followers is None and pool_id:
+            followers = self.get_followers(pool_id)
+        if dev_initial_buy is None and pool_id:
+            dev_initial_buy = self.get_dev_initial_buy(pool_id)
 
         message = f"""🆕 <b>New Token Detected!</b>
 
