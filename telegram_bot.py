@@ -96,10 +96,10 @@ class TelegramBot:
         contract_address: str,
         twitter_handle: Optional[str] = None,
         coinType: Optional[str] = None,
-        pool_id: Optional[str] = None,
+        contract_address: Optional[str] = None,
         market_cap: Optional[float] = None,
         is_protected: Optional[bool] = None,
-        dev_initial_buy: Optional[str] = None   # NEW
+        pool_id: Optional[str] = None   # NEW
     ) -> str:
         """Format a new token message for Telegram"""
         message = f"""🆕 <b>New Token Detected!</b>
