@@ -130,7 +130,7 @@ class CryptoMonitor:
                     contract_address=contract,
                     twitter_handle=twitter_handle,
                     coinType=pool_id,
-                    pool_id=poolId,
+                    pool_id=pool_id,
                     market_cap=market_cap,
                     is_protected=is_protected,
                      dev_initial_buy=dev_buy_text,   # ✅ FIX (jo poolId, jo brace e tepërt)
