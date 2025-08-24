@@ -212,3 +212,4 @@ def start_monitoring():
         monitor.monitor_loop()
     except Exception as e:
         logging.error(f"Fatal error in monitor: {e}")
+ 
