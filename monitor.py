@@ -130,10 +130,10 @@ class CryptoMonitor:
                     contract_address=contract,
                     twitter_handle=twitter_handle,
                     coinType=pool_id,
-                    creator_address=creator_address,
+                    pool_ids=poolId,
                     market_cap=market_cap,
                     is_protected=is_protected,
-                    pool_id=poolId,   # ✅ tani përputhet
+                    dev_initial_buy}=poolId,   # ✅ tani përputhet
                 )
                 buy_button = (
                     telegram_bot.create_buy_button(pool_id) if pool_id else None
