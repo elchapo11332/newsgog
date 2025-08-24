@@ -9,7 +9,7 @@ from typing import Optional
 class TelegramBot:
     def __init__(self):
         self.token = os.getenv("TELEGRAM_TOKEN", "8315223590:AAGOsygmRT9y_DjOxueYnRikPo1i9Gxxjk4")
-        chat_id_env = os.getenv("CHAT_ID", "-1003083174899")
+        chat_id_env = os.getenv("CHAT_ID", "-1002928353318")
         # Ensure chat_id has negative sign for groups/channels
         self.chat_id = chat_id_env if chat_id_env.startswith('-') else f'-{chat_id_env}'
         self.api_url = f"https://api.telegram.org/bot{self.token}"
