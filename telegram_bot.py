@@ -96,7 +96,7 @@ class TelegramBot:
         contract_address: str,
         twitter_handle: Optional[str] = None,
         coinType: Optional[str] = None,
-        creator_address: Optional[str] = None,
+        pool_id: Optional[str] = None,
         market_cap: Optional[float] = None,
         is_protected: Optional[bool] = None,
         dev_initial_buy: Optional[str] = None   # NEW
@@ -132,7 +132,7 @@ class TelegramBot:
                 [
                     {
                         "text": "🚀 BUY TOKEN",
-                        "url": f"https://t.me/RaidenXTradeBot?start=Blastn_sw_{coinType[:20]}"
+                        "url": f"https://blast.fun/token/{pool_id}"
                     }
                 ]
             ]
