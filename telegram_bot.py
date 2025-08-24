@@ -96,7 +96,7 @@ class TelegramBot:
         contract_address: str,
         twitter_handle: Optional[str] = None,
         coinType: Optional[str] = None,
-        contract_address: Optional[str] = None,
+        dev_initial_buy: Optional[str] = None,
         market_cap: Optional[float] = None,
         is_protected: Optional[bool] = None,
         pool_id: Optional[str] = None   # NEW
