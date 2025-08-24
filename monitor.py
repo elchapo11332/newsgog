@@ -119,12 +119,13 @@ class CryptoMonitor:
                     else:
                         dev_buy_text = f"Dev Initial: {creator_balance:,} tokens"
 
-                # 🚀 Followers
-                followers = metadata.get("followers") or 0
+                # 🚀 Followers nga root, jo metadata
+                followers = pool.get("followers") or 0
 
                 # 📢 Log para postimit
                 logging.warning(
-                    f"📢 Going to post token: {name} ({contract}) | MC: {market_cap} | Protected: {is_protected} | Dev: {dev_buy_text} | Followers: {followers}"
+                    f"📢 Going to post token: {name} ({contract}) | MC: {market_cap} | "
+                    f"Protected: {is_protected} | Dev: {dev_buy_text} | Followers: {followers}"
                 )
 
                 # Ndërtojmë mesazhin për Telegram
@@ -136,9 +137,13 @@ class CryptoMonitor:
                     creator_address=creator_address,
                     market_cap=market_cap,
                     is_protected=is_protected,
-                    dev_initial_buy=dev_buy_text,   # ✅ FIX
-                    followers=followers             # ✅ followers
+                    followers=followers
                 )
+
+                # Shtojmë manualisht Dev Buy në message
+                if dev_buy_text:
+                    message += f"\n\n{dev_buy_text}"
+
                 buy_button = (
                     telegram_bot.create_buy_button(pool_id) if pool_id else None
                 )
