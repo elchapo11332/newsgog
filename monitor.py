@@ -84,7 +84,7 @@ class CryptoMonitor:
                     logging.debug(f"Already posted: {contract}")
                     continue
 
-                # Extract emrin
+                # Extract token info
                 coin_metadata = pool.get("coinMetadata", {})
                 name = (
                     coin_metadata.get("name")
@@ -101,17 +101,19 @@ class CryptoMonitor:
                 pool_id = pool.get("coinType")
                 metadata = pool.get("metadata", {})
                 twitter_handle = metadata.get("twitterHandle")
-                token_image = coin_metadata.get("icon_url") or coin_metadata.get("iconUrl")
-                creator_address = pool.get("creatorAddress")  # 🚀 nga API
+                if twitter_handle:
+                    twitter_handle = twitter_handle.lstrip('@')  # clean for link
 
-                # Marrim MarketCap nga marketData dhe isProtected direkt nga pool
+                token_image = coin_metadata.get("icon_url") or coin_metadata.get("iconUrl")
+                creator_address = pool.get("creatorAddress")
+
                 market_data = pool.get("marketData", {})
                 market_cap = market_data.get("marketCap")
-                is_protected = pool.get("isProtected")  # ✅ FIX
+                is_protected = pool.get("isProtected")
 
-                # 🚀 Marrim Dev Initial Buy
+                # Dev Initial Buy
                 creator_balance = pool.get("creatorBalance")
-                creator_percent = pool.get("creatorPercent")  # disa API japin %
+                creator_percent = pool.get("creatorPercent")
                 dev_buy_text = None
                 if creator_balance:
                     if creator_percent:
@@ -119,27 +121,27 @@ class CryptoMonitor:
                     else:
                         dev_buy_text = f"Dev Initial: {creator_balance:,} tokens"
 
-                # 📢 Log para postimit
+                # Log before posting
                 logging.warning(
                     f"📢 Going to post token: {name} ({contract}) | MarketCap: {market_cap} | Protected: {is_protected} | Dev: {dev_buy_text}"
                 )
 
-                # Ndërtojmë mesazhin për Telegram
+                # Build Telegram message
                 message = telegram_bot.format_token_message(
                     token_name=name,
                     contract_address=contract,
-                    twitter_handle=twitterhandle,
+                    twitter_handle=twitter_handle,
                     coinType=pool_id,
                     creator_address=creator_address,
                     market_cap=market_cap,
                     is_protected=is_protected,
-                    dev_initial_buy=dev_buy_text,   # ✅ tani përputhet
+                    dev_initial_buy=dev_buy_text,
                 )
                 buy_button = (
                     telegram_bot.create_buy_button(pool_id) if pool_id else None
                 )
 
-                # Posto në Telegram
+                # Post to Telegram
                 if token_image and token_image.startswith("data:image"):
                     telegram_result = telegram_bot.send_photo(token_image, message, buy_button)
                 else:
@@ -212,4 +214,3 @@ def start_monitoring():
         monitor.monitor_loop()
     except Exception as e:
         logging.error(f"Fatal error in monitor: {e}")
- 
