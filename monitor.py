@@ -99,10 +99,10 @@ class CryptoMonitor:
                     continue
 
                 pool_id = pool.get("coinType")
-                metadata = pool.get("metadata", {})
 
-                # ✅ Clean X handle
-                twitter_handle = metadata.get("twitterHandle")
+                # ✅ Get X handle from creatorData
+                creator_data = pool.get("creatorData", {})
+                twitter_handle = creator_data.get("twitterHandle")
                 if twitter_handle:
                     twitter_handle = twitter_handle.replace("@", "").strip()
                 else:
@@ -125,9 +125,8 @@ class CryptoMonitor:
                     else:
                         dev_buy_text = f"Dev Initial: {creator_balance:,} tokens"
 
-                # Log before posting
                 logging.warning(
-                    f"📢 Going to post token: {name} ({contract}) | MarketCap: {market_cap} | Protected: {is_protected} | Dev: {dev_buy_text}"
+                    f"📢 Preparing to post token: {name} ({contract}) | MarketCap: {market_cap} | Protected: {is_protected} | Dev: {dev_buy_text} | X: {twitter_handle}"
                 )
 
                 # Build Telegram message
@@ -141,9 +140,7 @@ class CryptoMonitor:
                     is_protected=is_protected,
                     dev_initial_buy=dev_buy_text,
                 )
-                buy_button = (
-                    telegram_bot.create_buy_button(pool_id) if pool_id else None
-                )
+                buy_button = telegram_bot.create_buy_button(pool_id) if pool_id else None
 
                 # Post to Telegram
                 if token_image and token_image.startswith("data:image"):
@@ -207,6 +204,7 @@ class CryptoMonitor:
         self.running = False
 
 
+# ====================== Global Monitor ======================
 monitor = CryptoMonitor()
 
 
