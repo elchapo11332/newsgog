@@ -100,7 +100,7 @@ class CryptoMonitor:
 
                 pool_id = pool.get("coinType")
                 metadata = pool.get("metadata", {})
-                twitter_handle = metadata.get("CreatorTwitterName")
+                twitter_handle = metadata.get("twitterHandle")
                 token_image = coin_metadata.get("icon_url") or coin_metadata.get("iconUrl")
                 creator_address = pool.get("creatorAddress")  # 🚀 nga API
 
