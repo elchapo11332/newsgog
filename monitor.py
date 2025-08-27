@@ -128,7 +128,7 @@ class CryptoMonitor:
                 message = telegram_bot.format_token_message(
                     token_name=name,
                     contract_address=contract,
-                    twitter_handle=twitter_handle,
+                    twitter_handle=twitterhandle,
                     coinType=pool_id,
                     creator_address=creator_address,
                     market_cap=market_cap,
