@@ -100,9 +100,13 @@ class CryptoMonitor:
 
                 pool_id = pool.get("coinType")
                 metadata = pool.get("metadata", {})
+
+                # ✅ Clean X handle
                 twitter_handle = metadata.get("twitterHandle")
                 if twitter_handle:
-                    twitter_handle = twitter_handle.lstrip('@')  # clean for link
+                    twitter_handle = twitter_handle.replace("@", "").strip()
+                else:
+                    twitter_handle = None
 
                 token_image = coin_metadata.get("icon_url") or coin_metadata.get("iconUrl")
                 creator_address = pool.get("creatorAddress")
