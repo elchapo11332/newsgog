@@ -111,14 +111,14 @@ class CryptoMonitor:
                 token_image = coin_metadata.get("icon_url") or coin_metadata.get("iconUrl")
                 creator_address = pool.get("creatorAddress")
                 market_data = pool.get("marketData") or {}
-                market_cap_value = market_data.get("marketCap")
 
                 # Rregullo MarketCap
+                market_cap_value = market_data.get("marketCap")
                 if market_cap_value is not None:
                     try:
                         market_cap = f"{int(round(float(market_cap_value))):,}"
                     except Exception:
-                        market_cap = "N/A"
+                        market_cap = str(market_cap_value)
                 else:
                     market_cap = "N/A"
 
