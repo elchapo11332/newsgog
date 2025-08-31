@@ -111,9 +111,17 @@ class CryptoMonitor:
                 token_image = coin_metadata.get("icon_url") or coin_metadata.get("iconUrl")
                 creator_address = pool.get("creatorAddress")
                 market_data = pool.get("marketData") or {}
-                market_cap = market_data.get("marketCap")
-                if market_cap is not None:
-                    market_cap = f"{int(round(market_cap)):,}"  # heq decimals dhe formaton
+                market_cap_value = market_data.get("marketCap")
+
+                # Rregullo MarketCap
+                if market_cap_value is not None:
+                    try:
+                        market_cap = f"{int(round(float(market_cap_value))):,}"
+                    except Exception:
+                        market_cap = "N/A"
+                else:
+                    market_cap = "N/A"
+
                 is_protected = pool.get("isProtected", False)
                 description = coin_metadata.get("description") or pool.get("description") or "N/A"
 
@@ -121,10 +129,14 @@ class CryptoMonitor:
                 creator_balance = pool.get("creatorBalance")
                 creator_percent = pool.get("creatorPercent")
                 dev_buy_text = None
-                if creator_balance:
-                    dev_buy_text = f"Dev Initial: {creator_balance:,} tokens"
-                    if creator_percent:
-                        dev_buy_text += f" ({creator_percent}%)"
+                if creator_balance is not None:
+                    try:
+                        balance_int = int(round(float(creator_balance)))
+                        dev_buy_text = f"Dev Initial: {balance_int:,} tokens"
+                        if creator_percent is not None:
+                            dev_buy_text += f" ({creator_percent}%)"
+                    except Exception:
+                        dev_buy_text = f"Dev Initial: {creator_balance} tokens"
 
                 logging.warning(
                     f"📢 Preparing to post token: {name} ({contract}) | "
@@ -136,14 +148,14 @@ class CryptoMonitor:
                 message = self.telegram.format_token_message(
                     token_name=name,
                     symbol=coin_metadata.get("symbol", ""),
-                    contract_address=f"Ca: {contract}",  # shto Ca para kontrakt address
+                    contract_address=contract,
                     coinType=pool_id,
                     creator_address=creator_address,
                     socials=socials if socials else None,
-                    market_cap=market_cap,
                     is_protected=is_protected,
-                    dev_initial_buy=dev_buy_text,
                     description=description,
+                    market_cap=market_cap,
+                    dev_initial_buy=dev_buy_text
                 )
 
                 # Create buy button
