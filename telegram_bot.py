@@ -100,7 +100,6 @@ class TelegramBot:
 
         message += f"🪙 <b>{token_name} - ${symbol}</b>\n"
         message += f"<code>{contract_address}</code>\n"
-        message += f"<code>{coinType}</code>\n\n"
 
         if description:
             message += f"📝 <b>Description:</b> {description}\n\n"
