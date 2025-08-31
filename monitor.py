@@ -112,6 +112,8 @@ class CryptoMonitor:
                 creator_address = pool.get("creatorAddress")
                 market_data = pool.get("marketData") or {}
                 market_cap = market_data.get("marketCap")
+                if market_cap is not None:
+                    market_cap = f"{int(round(market_cap)):,}"  # heq decimals dhe formaton
                 is_protected = pool.get("isProtected", False)
                 description = coin_metadata.get("description") or pool.get("description") or "N/A"
 
@@ -134,7 +136,7 @@ class CryptoMonitor:
                 message = self.telegram.format_token_message(
                     token_name=name,
                     symbol=coin_metadata.get("symbol", ""),
-                    contract_address=contract,
+                    contract_address=f"Ca: {contract}",  # shto Ca para kontrakt address
                     coinType=pool_id,
                     creator_address=creator_address,
                     socials=socials if socials else None,
