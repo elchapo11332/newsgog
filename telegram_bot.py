@@ -98,8 +98,8 @@ class TelegramBot:
         message = f"📣 <b>{token_name.upper()}</b>\n"
         message += f"deployed on <a href='https://blast.fun'>Blast.fun</a> 🆕!\n\n"
 
-        message += f"🪙 <b>{token_name} - ${symbol}</b>\n"
-        message += f"<code>{contract_address}</code>\n"
+        message += f"🪙 <b>{token_name} - ${symbol}</b>\n\n"
+        message += f"Ca:<code>{contract_address}</code>\n\n"
 
         if description:
             message += f"📝 <b>Description:</b> {description}\n\n"
@@ -113,7 +113,7 @@ class TelegramBot:
         if socials:
             links = []
             if "twitter" in socials:
-                links.append(f"🐦 <a href='{socials['twitter']}'>X</a>")
+                links.append(f"🐦 <a href='{socials['twitter']}'>X Account</a>")
             if "telegram" in socials:
                 links.append(f"📢 <a href='{socials['telegram']}'>TG</a>")
             message += f"📊 <b>Socials:</b> " + " | ".join(links) + "\n\n"
