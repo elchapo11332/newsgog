@@ -4,7 +4,8 @@ import logging
 import requests
 import base64
 import tempfile
-from typing import Optional
+from typing import Optional, Dict
+
 
 class TelegramBot:
     def __init__(self):
@@ -84,35 +85,44 @@ class TelegramBot:
     def format_token_message(
         self,
         token_name: str,
+        symbol: str,
         contract_address: str,
-        twitter_handle: Optional[str] = None,
-        coinType: Optional[str] = None,
-        creator_address: Optional[str] = None,
-        market_cap: Optional[float] = None,
+        coinType: str,
+        creator_address: str,
+        socials: Optional[Dict[str, str]] = None,
         is_protected: Optional[bool] = None,
-        dev_initial_buy: Optional[str] = None
+        description: Optional[str] = None
     ) -> str:
-        """Format a new token message for Telegram"""
-        message = f"🆕 <b>New Token Detected!</b>\n\n"
-        message += f"📛 <b>Name:</b> {token_name}\n"
-        message += f"📜 <b>Contract:</b> <code>{contract_address}</code>"
+        """Format token message in style like screenshot"""
 
-        if twitter_handle:
-            twitter_handle = twitter_handle.lstrip('@')
-            message += f"\n❌ <b>X:</b> <a href=\"https://x.com/{twitter_handle}\">@{twitter_handle}</a>"
+        message = f"📣 <b>{token_name.upper()}</b>\n"
+        message += f"deployed on <a href='https://blast.fun'>Blast.fun</a> 🆕!\n\n"
 
-        if creator_address:
-            message += f"\n👤 <b>Creator:</b> <a href=\"https://suiscan.xyz/mainnet/account/{creator_address}\">{creator_address[:6]}...{creator_address[-4:]}</a>"
+        message += f"🪙 <b>{token_name} - ${symbol}</b>\n"
+        message += f"<code>{contract_address}</code>\n"
+        message += f"<code>{coinType}</code>\n\n"
 
-        if market_cap is not None:
-            message += f"\n💰 <b>MarketCap:</b> ${market_cap:,.2f}"
+        # Description (optional)
+        if description:
+            message += f"📝 <b>Description:</b> {description}\n\n"
 
-        if is_protected is not None:
-            status = "✅ Protected" if is_protected else "⚠️ Not Protected"
-            message += f"\n🛡️ <b>Security:</b> {status}"
+        # Socials
+        if socials:
+            links = []
+            if "twitter" in socials:
+                links.append(f"🐦 <a href='{socials['twitter']}'>X</a>")
+            if "telegram" in socials:
+                links.append(f"📢 <a href='{socials['telegram']}'>TG</a>")
+            message += f"📊 <b>Socials:</b> " + " | ".join(links) + "\n\n"
 
-        if dev_initial_buy:
-            message += f"\n🛒 <b>Dev Initial Buy:</b> {dev_initial_buy}"
+        # Security / Anti-sniper
+        if is_protected is True:
+            message += "🚨 <b>Anti-Sniper Protection Active</b>\n\n"
+        elif is_protected is False:
+            message += "⚠️ <b>Anti-Sniper NOT Active</b>\n\n"
+
+        # Creator
+        message += f"👨‍💻 <b>Created By:</b> <a href='https://suiscan.xyz/mainnet/account/{creator_address}'>{creator_address[:6]}...{creator_address[-4:]}</a>"
 
         return message
 
@@ -125,6 +135,7 @@ class TelegramBot:
                 ]
             ]
         }
+
 
 # Global bot instance
 telegram_bot = TelegramBot()
